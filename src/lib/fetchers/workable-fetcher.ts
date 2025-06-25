@@ -1,6 +1,3 @@
-import { Job } from "../../../types/Job";
-import * as cheerio from "cheerio";
-
 export async function fetchWorkableJobs(query: string): Promise<string> {
   const searchUrl = `https://jobs.workable.com/search?query=${encodeURIComponent(
     query

@@ -1,23 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Job } from "../../../../types/Job";
 import { fetchRemoteIoJobs } from "@/lib/fetchers/remote-io-fetcher";
 import { fetchWorkableJobs } from "@/lib/fetchers/workable-fetcher";
-
-const jobBoardFetchers: Array<(query: string) => Promise<Job[]>> = [
-  // fetchRemoteIoJobs,
-  fetchWorkableJobs,
-];
+import { extractJobsWithLLM } from "@/lib/llm/job-extractor";
 
 export async function POST(req: NextRequest) {
   const { query } = await req.json();
 
   try {
-    const resultsArr = await Promise.all(
-      jobBoardFetchers.map((fetcher) => fetcher(query))
-    );
-    const jobs = resultsArr.flat();
+    const [workableHtml, remoteIoXml] = await Promise.all([
+      fetchWorkableJobs(query),
+      fetchRemoteIoJobs(query),
+    ]);
 
-    if (jobs.length === 0) {
+    const [workableJobs, remoteIoJobs] = await Promise.all([
+      extractJobsWithLLM(workableHtml, query),
+      extractJobsWithLLM(remoteIoXml, query),
+    ]);
+
+    const jobs = [...(workableJobs || []), ...(remoteIoJobs || [])];
+
+    if (!jobs.length) {
       return NextResponse.json({
         results: [],
         message: `No jobs found for "${query}".`,
@@ -26,8 +28,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ results: jobs });
   } catch (e) {
+    console.error("API /api/search error:", e);
     return NextResponse.json(
-      { results: "Error fetching jobs. Please try again later." },
+      { results: [], message: "Error fetching jobs. Please try again later." },
       { status: 500 }
     );
   }

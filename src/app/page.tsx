@@ -1,14 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-type Job = {
-  title: string;
-  link: string;
-  description: string;
-  pubDate: string;
-  source: string;
-};
+import { Job } from "../../types/Job";
 
 export default function Home() {
   const [query, setQuery] = useState("");
