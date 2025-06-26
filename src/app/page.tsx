@@ -12,6 +12,7 @@ export default function Home() {
   const [results, setResults] = useState<Job[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [visitedLinks, setVisitedLinks] = useState<Set<string>>(new Set());
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,23 +31,28 @@ export default function Home() {
     setLoading(false);
   }
 
-  const totalPages = Math.ceil(results.length / PAGE_SIZE);
-  const paginatedResults = results.slice(
+  const uniqueResults = Array.from(
+    new Map(results.map((job) => [job.link, job])).values()
+  );
+
+  const totalPages = Math.ceil(uniqueResults.length / PAGE_SIZE);
+  const paginatedResults = uniqueResults.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE
   );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8"
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-8"
       style={{
-        background: "linear-gradient(135deg, #a9bcd0 0%, #6b818c 100%)"
+        background: "linear-gradient(135deg, #a9bcd0 0%, #6b818c 100%)",
       }}
     >
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md flex flex-col gap-4 bg-white/90 rounded-xl shadow-lg p-6 border"
         style={{
-          borderColor: "#a9bcd0"
+          borderColor: "#a9bcd0",
         }}
       >
         <input
@@ -55,7 +61,7 @@ export default function Home() {
           style={{
             borderColor: "#6b818c",
             background: "#f7fafc",
-            color: "#3a6174"
+            color: "#3a6174",
           }}
           placeholder="Describe your ideal job..."
           value={query}
@@ -67,7 +73,7 @@ export default function Home() {
           className="rounded-lg p-3 font-semibold shadow transition"
           style={{
             background: loading ? "#6b818c" : "#3a6174",
-            color: "#fff"
+            color: "#fff",
           }}
           disabled={loading}
         >
@@ -79,9 +85,13 @@ export default function Home() {
         {paginatedResults.map((job, i) => (
           <div
             key={i}
-            className="relative shadow-md hover:shadow-xl transition rounded-xl p-6 border flex flex-col gap-2 bg-white"
+            className={`relative shadow-md hover:shadow-xl transition rounded-xl p-6 border flex flex-col gap-2 bg-white ${
+              visitedLinks.has(job.link)
+                ? "opacity-70 border-[#3a6174] bg-[#a9bcd0]"
+                : ""
+            }`}
             style={{
-              borderColor: "#a9bcd0"
+              borderColor: visitedLinks.has(job.link) ? "#3a6174" : "#a9bcd0",
             }}
           >
             {/* Source badge at top right */}
@@ -89,7 +99,7 @@ export default function Home() {
               className="absolute top-4 right-4 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide"
               style={{
                 background: "#a9bcd0",
-                color: "#3a6174"
+                color: "#3a6174",
               }}
             >
               {job.source}
@@ -104,7 +114,8 @@ export default function Home() {
                 </div>
               )}
               <div className="text-sm" style={{ color: "#6b818c" }}>
-                🗓️ {job.pubDate ? new Date(job.pubDate).toLocaleDateString() : ""}
+                🗓️{" "}
+                {job.pubDate ? new Date(job.pubDate).toLocaleDateString() : ""}
               </div>
               <div
                 className="text-base whitespace-pre-line overflow-hidden overflow-ellipsis line-clamp-5"
@@ -120,12 +131,30 @@ export default function Home() {
                   className="font-semibold"
                   style={{
                     color: "#3a6174",
-                    textDecoration: "underline"
+                    textDecoration: "underline",
+                  }}
+                  onClick={() => {
+                    setVisitedLinks((prev) => new Set(prev).add(job.link));
                   }}
                 >
                   More details &rarr;
                 </a>
               </div>
+              {/* {isLoggedIn && (
+                <button
+                  onClick={async () => {
+                    await fetch("/api/jobs/apply", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ jobId: job.id }),
+                    });
+                    // Optionally update UI state
+                  }}
+                  className="ml-2 px-3 py-1 rounded bg-[#3a6174] text-white text-xs"
+                >
+                  Mark as Applied
+                </button>
+              )} */}
             </div>
           </div>
         ))}
@@ -136,7 +165,7 @@ export default function Home() {
               className="px-4 py-2 rounded font-semibold disabled:opacity-50 cursor-pointer"
               style={{
                 background: "#a9bcd0",
-                color: "#3a6174"
+                color: "#3a6174",
               }}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
@@ -150,7 +179,7 @@ export default function Home() {
               className="px-4 py-2 rounded font-semibold disabled:opacity-50 cursor-pointer"
               style={{
                 background: "#a9bcd0",
-                color: "#3a6174"
+                color: "#3a6174",
               }}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}

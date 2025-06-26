@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  email     String       @unique
+  password  String
+  searches  Search[]
+  applied   AppliedJob[]
+}
+
+model Search {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  query     String
+  createdAt DateTime       @default(now())
+  user      User           @relation(fields: [userId], references: [id])
+  userId    String         @db.ObjectId
+  results   SearchResult[]
+}
+
+model Job {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  link        String
+  description String
+  pubDate     String
+  source      String
+  company     String?
+  location    String?
+  salary      String?
+  appliedBy   AppliedJob[]
+  searchHits  SearchResult[]
+}
+
+// Explicit join table for User <-> Job (applied jobs)
+model AppliedJob {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+  job    Job    @relation(fields: [jobId], references: [id])
+  jobId  String @db.ObjectId
+}
+
+// Explicit join table for Search <-> Job (search results)
+model SearchResult {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  search    Search  @relation(fields: [searchId], references: [id])
+  searchId  String  @db.ObjectId
+  job       Job     @relation(fields: [jobId], references: [id])
+  jobId     String  @db.ObjectId
+}
