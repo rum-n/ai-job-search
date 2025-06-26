@@ -4,17 +4,21 @@ import { useState } from "react";
 import { Job } from "../../types/Job";
 import { stripHtml } from "@/lib/llm/strip-html";
 
+const PAGE_SIZE = 10;
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<Job[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setResults([]);
     setMessage(null);
+    setPage(1); // Reset to first page on new search
     const res = await fetch("/api/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -25,6 +29,13 @@ export default function Home() {
     setMessage(data.message || null);
     setLoading(false);
   }
+
+  // Pagination logic
+  const totalPages = Math.ceil(results.length / PAGE_SIZE);
+  const paginatedResults = results.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-gray-100 to-blue-50">
@@ -50,7 +61,7 @@ export default function Home() {
       </form>
       <div className="mt-10 w-full max-w-2xl flex flex-col gap-6">
         {message && <div className="text-gray-500 text-center">{message}</div>}
-        {results.map((job, i) => (
+        {paginatedResults.map((job, i) => (
           <div
             key={i}
             className="relative bg-white/95 shadow-md hover:shadow-xl transition rounded-xl p-6 border border-gray-100 flex flex-col gap-2"
@@ -63,8 +74,7 @@ export default function Home() {
               <div className="text-xl font-bold text-blue-700">{job.title}</div>
               {job.company && (
                 <div className="text-sm text-gray-600">
-                  <span className="font-semibold">Company:</span>{" "}
-                  {job.company ? job.company : ""}
+                  <span className="font-semibold">Company:</span> {job.company}
                 </div>
               )}
               <div className="text-sm text-gray-500">
@@ -87,6 +97,28 @@ export default function Home() {
             </div>
           </div>
         ))}
+        {/* Pagination controls */}
+        {results.length > PAGE_SIZE && (
+          <div className="flex justify-center items-center gap-4 mt-4">
+            <button
+              className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold disabled:opacity-50 cursor-pointer"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </button>
+            <span className="text-gray-700">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold disabled:opacity-50 cursor-pointer"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

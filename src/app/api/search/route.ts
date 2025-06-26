@@ -8,10 +8,19 @@ export async function POST(req: NextRequest) {
   const { query } = await req.json();
 
   try {
-    const [workableHtml, remoteIoJobs] = await Promise.all([
-      fetchWorkableJobs(query),
-      fetchRemoteIoJobs(query),
-    ]);
+    let workableHtml, remoteIoJobs;
+    try {
+      workableHtml = await fetchWorkableJobs(query);
+    } catch (e) {
+      console.error("Error fetching workable jobs:", e);
+      workableHtml = "";
+    }
+    try {
+      remoteIoJobs = await fetchRemoteIoJobs(query);
+    } catch (e) {
+      console.error("Error fetching remote.io jobs:", e);
+      remoteIoJobs = [];
+    }
 
     const CHUNK_SIZE = 12000;
     const workableChunks = splitIntoChunks(workableHtml, CHUNK_SIZE);
