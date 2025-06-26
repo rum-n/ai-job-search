@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Job } from "../../types/Job";
+import { stripHtml } from "@/lib/llm/strip-html";
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -52,26 +53,37 @@ export default function Home() {
         {results.map((job, i) => (
           <div
             key={i}
-            className="bg-white/95 shadow-md hover:shadow-xl transition rounded-xl p-6 border border-gray-100 flex flex-col gap-2"
+            className="relative bg-white/95 shadow-md hover:shadow-xl transition rounded-xl p-6 border border-gray-100 flex flex-col gap-2"
           >
-            <div className="flex items-center gap-2">
-              <a
-                href={job.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xl font-bold text-blue-700 hover:underline"
-              >
-                {job.title}
-              </a>
-              <span className="ml-auto bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
-                {job.source}
-              </span>
-            </div>
-            <div className="text-sm text-gray-500 mb-1">
-              {new Date(job.pubDate).toLocaleDateString()}
-            </div>
-            <div className="text-gray-700 text-base whitespace-pre-line">
-              {job.description}
+            {/* Source badge at top right */}
+            <span className="absolute top-4 right-4 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide">
+              {job.source}
+            </span>
+            <div className="flex flex-col gap-1">
+              <div className="text-xl font-bold text-blue-700">{job.title}</div>
+              {job.company && (
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">Company:</span>{" "}
+                  {job.company ? job.company : ""}
+                </div>
+              )}
+              <div className="text-sm text-gray-500">
+                🗓️{" "}
+                {job.pubDate ? new Date(job.pubDate).toLocaleDateString() : ""}
+              </div>
+              <div className="text-gray-700 text-base whitespace-pre-line overflow-hidden overflow-ellipsis line-clamp-5">
+                {stripHtml(job.description)}
+              </div>
+              <div className="mt-2">
+                <a
+                  href={job.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-semibold"
+                >
+                  More details &rarr;
+                </a>
+              </div>
             </div>
           </div>
         ))}

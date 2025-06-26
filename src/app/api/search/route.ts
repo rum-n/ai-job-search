@@ -2,20 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchRemoteIoJobs } from "@/lib/fetchers/remote-io-fetcher";
 import { fetchWorkableJobs } from "@/lib/fetchers/workable-fetcher";
 import { extractJobsWithLLM } from "@/lib/llm/job-extractor";
+import { splitIntoChunks } from "@/lib/llm/chunk-splitter";
 
 export async function POST(req: NextRequest) {
   const { query } = await req.json();
 
   try {
-    const [workableHtml, remoteIoXml] = await Promise.all([
+    const [workableHtml, remoteIoJobs] = await Promise.all([
       fetchWorkableJobs(query),
       fetchRemoteIoJobs(query),
     ]);
 
-    const [workableJobs, remoteIoJobs] = await Promise.all([
-      extractJobsWithLLM(workableHtml, query),
-      extractJobsWithLLM(remoteIoXml, query),
-    ]);
+    const CHUNK_SIZE = 12000;
+    const workableChunks = splitIntoChunks(workableHtml, CHUNK_SIZE);
+
+    const workableJobsArrays = await Promise.all(
+      workableChunks.map((chunk) => extractJobsWithLLM(chunk, query))
+    );
+    const workableJobs = workableJobsArrays.flat();
 
     const jobs = [...(workableJobs || []), ...(remoteIoJobs || [])];
 

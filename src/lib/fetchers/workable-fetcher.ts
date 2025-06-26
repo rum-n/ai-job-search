@@ -1,7 +1,7 @@
 export async function fetchWorkableJobs(query: string): Promise<string> {
   const searchUrl = `https://jobs.workable.com/search?query=${encodeURIComponent(
     query
-  )}&workplace=remote`;
+  )}&workplace=remote&day_range=7`;
 
   const res = await fetch(searchUrl, {
     headers: {

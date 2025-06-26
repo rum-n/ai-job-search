@@ -4,4 +4,5 @@ export type Job = {
   description: string;
   pubDate: string;
   source: string;
+  company?: string;
 };
