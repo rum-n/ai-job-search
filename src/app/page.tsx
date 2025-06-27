@@ -116,7 +116,7 @@ export default function Home() {
           </Button>
         </form>
 
-        {!loading && (
+        {!loading && results.length === 0 && (
           <div className="mt-6">
             <CardHeader>
               <h2 className="text-xl font-semibold text-primary flex items-center gap-2 justify-center">
@@ -161,7 +161,10 @@ export default function Home() {
                   </div>
                 </div>
                 <Badge variant="secondary" className="uppercase tracking-wide">
-                  {job.source}
+                  {/* limit width */}
+                  {job.source.length > 15
+                    ? job.source.slice(0, 15) + "..."
+                    : job.source}
                 </Badge>
               </CardHeader>
               <Separator />
