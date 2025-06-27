@@ -25,6 +25,39 @@ export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const [user, setUser] = useState<{ email: string } | null>(null);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const email = localStorage.getItem("email");
+    if (token && email) {
+      setUser({ email });
+      // Fetch history only if results are empty (no search yet)
+      if (!historyLoaded && results.length === 0) {
+        fetch("/api/history", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (
+              data.history &&
+              data.history.length > 0 &&
+              data.history[0].results &&
+              Array.isArray(data.history[0].results)
+            ) {
+              setResults(data.history[0].results);
+              setMessage(null);
+              setPage(1);
+            }
+            setHistoryLoaded(true);
+          })
+          .catch(() => setHistoryLoaded(true));
+      }
+    }
+  }, [historyLoaded, results.length]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +74,18 @@ export default function Home() {
     setResults(data.results || []);
     setMessage(data.message || null);
     setLoading(false);
+
+    if (user && data.results && data.results.length > 0) {
+      const token = localStorage.getItem("token");
+      await fetch("/api/history", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ query, results: data.results }),
+      });
+    }
   }
 
   useEffect(() => {
@@ -97,12 +142,12 @@ export default function Home() {
           Find Your Next Remote Opportunity
         </h1>
         <p className="text-lg text-muted-foreground mb-4">
-          Powered by AI to match you with the perfect job opportunities from
-          across the web
+          Powered by AI to match you with the perfect job opportunities from 20+
+          remote job boards.
         </p>
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-2xl flex flex-col gap-4 bg-card rounded-xl shadow-lg p-6 border"
+          className="w-full max-w-2xl flex flex-col gap-4 bg-card rounded-xl shadow-lg p-6 border my-6"
         >
           <Input
             type="text"
