@@ -7,6 +7,11 @@ import Navbar from "./components/Navbar";
 import Modal from "./components/Modal";
 import SignupForm from "./components/SignupForm";
 import LoginForm from "./components/LoginForm";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const PAGE_SIZE = 10;
 
@@ -87,155 +92,124 @@ export default function Home() {
       <Modal open={showSignup} onClose={() => setShowSignup(false)}>
         <SignupForm />
       </Modal>
-      <div
-        className="min-h-screen flex flex-col items-center justify-center p-8"
-        style={{
-          background: "linear-gradient(135deg, #a9bcd0 0%, #6b818c 100%)",
-        }}
-      >
+      <div className="min-h-screen flex flex-col items-center  p-8 bg-background">
+        <h1 className="text-3xl font-bold text-primary mb-6">
+          Find Your Next Remote Opportunity
+        </h1>
+        <p className="text-lg text-muted-foreground mb-4">
+          Powered by AI to match you with the perfect job opportunities from
+          across the web
+        </p>
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-md flex flex-col gap-4 bg-white/90 rounded-xl shadow-lg p-6 border"
-          style={{
-            borderColor: "#a9bcd0",
-          }}
+          className="w-full max-w-2xl flex flex-col gap-4 bg-card rounded-xl shadow-lg p-6 border"
         >
-          <input
+          <Input
             type="text"
-            className="border rounded-lg p-3"
-            style={{
-              borderColor: "#6b818c",
-              background: "#f7fafc",
-              color: "#3a6174",
-            }}
             placeholder="Describe your ideal job..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             required
           />
-          <button
-            type="submit"
-            className="rounded-lg p-3 font-semibold shadow transition cursor-pointer"
-            style={{
-              background: loading ? "#6b818c" : "#3a6174",
-              color: "#fff",
-            }}
-            disabled={loading}
-          >
+          <Button type="submit" disabled={loading}>
             {loading ? "Searching..." : "Find Jobs"}
-          </button>
+          </Button>
         </form>
+
+        {!loading && (
+          <div className="mt-6">
+            <CardHeader>
+              <h2 className="text-xl font-semibold text-primary flex items-center gap-2 justify-center">
+                Start Your Job Search
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Enter a job title, company, or skills to find your next
+                opportunity.
+              </p>
+            </CardContent>
+          </div>
+        )}
+
         <div className="mt-10 w-full max-w-2xl flex flex-col gap-6">
-          {message && (
-            <div className="text-gray-700 text-center">{message}</div>
-          )}
           {paginatedResults.map((job, i) => (
-            <div
+            <Card
               key={i}
-              className={`relative shadow-md hover:shadow-xl transition rounded-xl p-6 border flex flex-col gap-2 bg-white ${
+              className={`relative transition ${
                 visitedLinks.has(job.link)
-                  ? "opacity-70 border-[#3a6174] bg-[#a9bcd0]"
+                  ? "opacity-70 border-primary bg-muted"
                   : ""
               }`}
-              style={{
-                borderColor: visitedLinks.has(job.link) ? "#3a6174" : "#a9bcd0",
-              }}
             >
-              {/* Source badge at top right */}
-              <span
-                className="absolute top-4 right-4 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide"
-                style={{
-                  background: "#a9bcd0",
-                  color: "#3a6174",
-                }}
-              >
-                {job.source}
-              </span>
-              <div className="flex flex-col gap-1">
-                <div className="text-xl font-bold" style={{ color: "#3a6174" }}>
-                  {job.title}
-                </div>
-                {job.company && (
-                  <div className="text-sm" style={{ color: "#6b818c" }}>
-                    <span className="font-semibold">Company:</span>{" "}
-                    {job.company}
+              <CardHeader className="flex justify-between items-start">
+                <div>
+                  <div className="text-xl font-bold text-primary">
+                    {job.title}
                   </div>
-                )}
-                <div className="text-sm" style={{ color: "#6b818c" }}>
-                  🗓️{" "}
-                  {job.pubDate
-                    ? new Date(job.pubDate).toLocaleDateString()
-                    : ""}
+                  {job.company && (
+                    <div className="text-sm text-muted-foreground">
+                      <span className="font-semibold">Company:</span>{" "}
+                      {job.company}
+                    </div>
+                  )}
+                  <div className="text-sm text-muted-foreground">
+                    🗓️{" "}
+                    {job.pubDate
+                      ? new Date(job.pubDate).toLocaleDateString()
+                      : ""}
+                  </div>
                 </div>
-                <div
-                  className="text-base whitespace-pre-line overflow-hidden overflow-ellipsis line-clamp-5"
-                  style={{ color: "#3a6174" }}
-                >
+                <Badge variant="secondary" className="uppercase tracking-wide">
+                  {job.source}
+                </Badge>
+              </CardHeader>
+              <Separator />
+              <CardContent>
+                <div className="text-base whitespace-pre-line line-clamp-5 text-primary">
                   {stripHtml(job.description)}
                 </div>
                 <div className="mt-2">
-                  <a
-                    href={job.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold"
-                    style={{
-                      color: "#3a6174",
-                      textDecoration: "underline",
-                    }}
-                    onClick={() => {
-                      setVisitedLinks((prev) => new Set(prev).add(job.link));
-                    }}
+                  <Button
+                    asChild
+                    variant="link"
+                    className="p-0 h-auto"
+                    onClick={() =>
+                      setVisitedLinks((prev) => new Set(prev).add(job.link))
+                    }
                   >
-                    More details &rarr;
-                  </a>
+                    <a
+                      href={job.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      More details &rarr;
+                    </a>
+                  </Button>
                 </div>
-                {/* {isLoggedIn && (
-                <button
-                  onClick={async () => {
-                    await fetch("/api/jobs/apply", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ jobId: job.id }),
-                    });
-                    // Optionally update UI state
-                  }}
-                  className="ml-2 px-3 py-1 rounded bg-[#3a6174] text-white text-xs"
-                >
-                  Mark as Applied
-                </button>
-              )} */}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
           {/* Pagination controls */}
           {results.length > PAGE_SIZE && (
             <div className="flex justify-center items-center gap-4 mt-4">
-              <button
-                className="px-4 py-2 rounded font-semibold disabled:opacity-50 cursor-pointer"
-                style={{
-                  background: "#a9bcd0",
-                  color: "#3a6174",
-                }}
+              <Button
+                variant="outline"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
               >
                 Previous
-              </button>
-              <span className="text-gray-700">
+              </Button>
+              <span className="text-muted-foreground">
                 Page {page} of {totalPages}
               </span>
-              <button
-                className="px-4 py-2 rounded font-semibold disabled:opacity-50 cursor-pointer"
-                style={{
-                  background: "#a9bcd0",
-                  color: "#3a6174",
-                }}
+              <Button
+                variant="outline"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
               >
                 Next
-              </button>
+              </Button>
             </div>
           )}
         </div>

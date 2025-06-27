@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function Navbar({
   user,
@@ -15,38 +16,38 @@ export default function Navbar({
   const router = useRouter();
 
   return (
-    <nav className="w-full flex items-center justify-between px-8 py-4 bg-[#3a6174] text-white shadow">
-      <div className="text-2xl font-bold tracking-wide">AI Job Search</div>
-      <div className="flex gap-4">
+    <nav className="w-full flex items-center justify-between px-8 py-4 bg-card border-b shadow-sm">
+      <div className="text-2xl font-bold tracking-wide text-primary">AI Job Search</div>
+      <div className="flex gap-3">
         {user ? (
           <>
-            <button
-              className="px-4 py-2 rounded bg-[#a9bcd0] text-[#3a6174] font-semibold hover:bg-[#6b818c] hover:text-white transition cursor-pointer"
+            <Button
+              variant="outline"
               onClick={() => router.push("/profile")}
             >
               Profile
-            </button>
-            <button
-              className="px-4 py-2 rounded bg-[#a9bcd0] text-[#3a6174] font-semibold hover:bg-[#6b818c] hover:text-white transition cursor-pointer"
+            </Button>
+            <Button
+              variant="destructive"
               onClick={onLogoutClick}
             >
               Logout
-            </button>
+            </Button>
           </>
         ) : (
           <>
-            <button
-              className="px-4 py-2 rounded bg-[#a9bcd0] text-[#3a6174] font-semibold hover:bg-[#6b818c] hover:text-white transition cursor-pointer"
+            <Button
+              variant="default"
               onClick={onLoginClick}
             >
               Login
-            </button>
-            <button
-              className="px-4 py-2 rounded bg-[#a9bcd0] text-[#3a6174] font-semibold hover:bg-[#6b818c] hover:text-white transition cursor-pointer"
+            </Button>
+            <Button
+              variant="secondary"
               onClick={onSignupClick}
             >
               Sign Up
-            </button>
+            </Button>
           </>
         )}
       </div>
