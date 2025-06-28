@@ -137,7 +137,48 @@ export default function Home() {
       <Modal open={showSignup} onClose={() => setShowSignup(false)}>
         <SignupForm />
       </Modal>
-      <div className="min-h-screen flex flex-col items-center  p-8 bg-background">
+      <div
+        className="min-h-screen flex flex-col items-center  p-8 bg-background"
+        style={{
+          background:
+            "radial-gradient(circle at 60% 40%, rgba(99,102,241,0.2) 0, transparent 60%)," +
+            "radial-gradient(circle at 20% 80%, rgba(16,185,129,0.2) 0, transparent 70%)",
+        }}
+      >
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none select-none"
+          width="100%"
+          height="100%"
+          style={{ zIndex: -1 }}
+          aria-hidden="true"
+        >
+          <defs>
+            <pattern
+              id="squares"
+              width="50"
+              height="50"
+              patternUnits="userSpaceOnUse"
+            >
+              <rect
+                x="0"
+                y="0"
+                width="45"
+                height="45"
+                fill="rgba(99,102,241,0.04)"
+              />
+            </pattern>
+            <radialGradient id="fade" cx="50%" cy="50%" r="80%">
+              <stop offset="60%" stopColor="white" stopOpacity="1" />
+              <stop offset="100%" stopColor="white" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect
+            width="100%"
+            height="100%"
+            fill="url(#squares)"
+            style={{ mask: "url(#fade)", WebkitMask: "url(#fade)" }}
+          />
+        </svg>
         <h1 className="text-3xl font-bold text-primary mb-6">
           Find Your Next Remote Opportunity
         </h1>
