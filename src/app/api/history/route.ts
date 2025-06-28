@@ -19,7 +19,30 @@ export async function POST(req: NextRequest) {
 
   const { query, results } = await req.json();
 
-  // 1. Create the Search record
+  // 1. Check current search count for the user
+  const searchCount = await prisma.search.count({
+    where: { userId: userId! },
+  });
+
+  // 2. If 5 or more, delete the oldest search (and its SearchResults)
+  if (searchCount >= 5) {
+    const oldest = await prisma.search.findFirst({
+      where: { userId: userId! },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+    if (oldest) {
+      // Delete related SearchResults first (MongoDB/Prisma does not cascade)
+      await prisma.searchResult.deleteMany({
+        where: { searchId: oldest.id },
+      });
+      await prisma.search.delete({
+        where: { id: oldest.id },
+      });
+    }
+  }
+
+  // 3. Create the Search record
   const search = await prisma.search.create({
     data: {
       userId: userId!,
@@ -28,7 +51,7 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // 2. For each job in results, upsert the Job and create a SearchResult
+  // 4. For each job in results, upsert the Job and create a SearchResult
   for (const job of results) {
     const jobRecord = await prisma.job.upsert({
       where: { link: job.link },
