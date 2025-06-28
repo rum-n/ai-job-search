@@ -167,16 +167,19 @@ export default function Home() {
                 fill="rgba(99,102,241,0.04)"
               />
             </pattern>
-            <radialGradient id="fade" cx="50%" cy="50%" r="80%">
+            <radialGradient id="fadeGradient" cx="50%" cy="50%" r="70%">
               <stop offset="60%" stopColor="white" stopOpacity="1" />
               <stop offset="100%" stopColor="white" stopOpacity="0" />
             </radialGradient>
+            <mask id="fadeMask">
+              <rect width="100%" height="100%" fill="url(#fadeGradient)" />
+            </mask>
           </defs>
           <rect
             width="100%"
             height="100%"
             fill="url(#squares)"
-            style={{ mask: "url(#fade)", WebkitMask: "url(#fade)" }}
+            mask="url(#fadeMask)"
           />
         </svg>
         <h1 className="text-3xl font-bold text-primary mb-6">

@@ -12,7 +12,7 @@ export async function extractJobsWithLLM(
       You are a job extraction assistant. Given the following HTML from a job board
       and a user query, extract a list of relevant jobs as JSON objects with:
       title, link, description, pubDate, company and source. Only include jobs that match
-      the query with the title.
+      the query.
 
       User query: "${query}"
 
