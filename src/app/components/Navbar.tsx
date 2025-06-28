@@ -21,7 +21,7 @@ export default function Navbar({
         className="text-2xl font-bold tracking-wide text-primary cursor-pointer"
         onClick={() => router.push("/")}
       >
-        AI Job Search
+        Match Remote
       </div>
       <div className="flex gap-3">
         {user ? (

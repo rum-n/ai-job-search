@@ -203,6 +203,35 @@ export default function Home() {
           <Button type="submit" disabled={loading}>
             {loading ? "Searching..." : "Find Jobs"}
           </Button>
+          {!user && (
+            <div className="flex flex-col items-center mt-2">
+              <span className="text-muted-foreground text-sm mb-2">
+                Or let AI do the work for you!
+              </span>
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                // onClick={handleUploadCV} // Implement this handler as needed
+                disabled
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-primary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 16v-8m0 8l-4-4m4 4l4-4M4 20h16"
+                  />
+                </svg>
+                Upload your CV and let AI find jobs for you
+              </Button>
+            </div>
+          )}
         </form>
 
         {!loading && results.length === 0 && (
@@ -305,6 +334,49 @@ export default function Home() {
             </div>
           )}
         </div>
+        <footer className="w-full mt-16 py-8 flex flex-col items-center text-sm text-muted-foreground border-t">
+          <div className="w-full max-w-lg flex flex-col sm:flex-row justify-between px-4">
+            <div className="flex flex-col gap-2">
+              <span className="font-semibold text-primary mb-1">Legal</span>
+              <a
+                href="/terms"
+                className="hover:text-primary underline transition"
+              >
+                Terms and Conditions
+              </a>
+              <a
+                href="/privacy"
+                className="hover:text-primary underline transition"
+              >
+                Privacy Policy
+              </a>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="font-semibold text-primary mb-1">Company</span>
+              <a
+                href="/about"
+                className="hover:text-primary underline transition"
+              >
+                About
+              </a>
+              <a
+                href="/contact"
+                className="hover:text-primary underline transition"
+              >
+                Contact
+              </a>
+              <a
+                href="/employers"
+                className="hover:text-primary underline transition"
+              >
+                For Employers
+              </a>
+            </div>
+          </div>
+          <span className="mt-6">
+            &copy; {new Date().getFullYear()} Match Remote
+          </span>
+        </footer>
       </div>
     </>
   );
