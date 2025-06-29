@@ -7,11 +7,13 @@ export default function Navbar({
   onLoginClick,
   onSignupClick,
   onLogoutClick,
+  onUploadCVClick,
 }: {
   user: { email: string } | null;
   onLoginClick: () => void;
   onSignupClick: () => void;
   onLogoutClick: () => void;
+  onUploadCVClick?: () => void;
 }) {
   const router = useRouter();
 
@@ -26,6 +28,11 @@ export default function Navbar({
       <div className="flex gap-3">
         {user ? (
           <>
+            {
+              <Button variant="secondary" onClick={onUploadCVClick}>
+                Upload CV
+              </Button>
+            }
             <Button variant="outline" onClick={() => router.push("/profile")}>
               Profile
             </Button>

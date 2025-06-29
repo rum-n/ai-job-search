@@ -12,6 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useRef } from "react";
+import { extractQueryFromCV } from "@/lib/llm/cv-query-extractor";
+// import { pdfjs } from "react-pdf";
+
+// pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+//   "pdfjs-dist/build/pdf.worker.min.mjs",
+//   import.meta.url
+// ).toString();
 
 const PAGE_SIZE = 10;
 
@@ -26,6 +34,8 @@ export default function Home() {
   const [showSignup, setShowSignup] = useState(false);
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [showUploadCV, setShowUploadCV] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -123,6 +133,45 @@ export default function Home() {
     page * PAGE_SIZE
   );
 
+  const handleCVUpload = async () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
+
+    const pdfjs = (await import("react-pdf")).pdfjs;
+
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+      "pdfjs-dist/build/pdf.worker.min.mjs",
+      import.meta.url
+    ).toString();
+
+    // Read PDF as ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+
+    let text = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map((item: any) => item.str).join(" ") + " ";
+    }
+
+    const res = await fetch("/api/extract-cv-query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cvText: text }),
+    });
+    const data = await res.json();
+
+    if (data.query) {
+      const cleanQuery = data.query.replace(/^["']|["']$/g, "");
+      setQuery(cleanQuery);
+      // Optionally auto-submit the search
+      // handleSubmit(new Event("submit"));
+    }
+
+    setShowUploadCV(false);
+  };
+
   return (
     <>
       <Navbar
@@ -130,12 +179,34 @@ export default function Home() {
         onLoginClick={() => setShowLogin(true)}
         onSignupClick={() => setShowSignup(true)}
         onLogoutClick={handleLogout}
+        onUploadCVClick={() => setShowUploadCV(true)}
       />
       <Modal open={showLogin} onClose={() => setShowLogin(false)}>
         <LoginForm onSuccess={handleLoginSuccess} />
       </Modal>
       <Modal open={showSignup} onClose={() => setShowSignup(false)}>
         <SignupForm />
+      </Modal>
+      <Modal open={showUploadCV} onClose={() => setShowUploadCV(false)}>
+        <div className="flex flex-col items-center gap-4">
+          <h2 className="text-xl font-bold text-primary mb-2">
+            Upload your CV
+          </h2>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx"
+            className="block w-full text-sm text-muted-foreground
+        file:mr-4 file:py-2 file:px-4
+        file:rounded-full file:border-0
+        file:text-sm file:font-semibold
+        file:bg-primary file:text-white
+        hover:file:bg-primary/80"
+          />
+          <Button onClick={handleCVUpload} className="w-full">
+            Upload
+          </Button>
+        </div>
       </Modal>
       <div
         className="min-h-screen flex flex-col items-center  p-8 bg-background"
@@ -199,6 +270,7 @@ export default function Home() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             required
+            className="h-12 text-lg bg-muted placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           />
           <Button type="submit" disabled={loading}>
             {loading ? "Searching..." : "Find Jobs"}
@@ -250,7 +322,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className="mt-10 w-full max-w-2xl flex flex-col gap-6">
+        <div className="mt-10 w-full max-w-3xl flex flex-col gap-6">
           {paginatedResults.map((job, i) => (
             <Card
               key={i}
